@@ -1,67 +1,93 @@
 package com.hidarisoft.adventofcode2024;
 
+
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class AdventofCode2024Application {
 
     public static void main(String[] args) {
-        ClassLoader classLoader = AdventofCode2024Application.class.getClassLoader();
-        InputStream inputStream = classLoader.getResourceAsStream("inputDay01.txt");
+        List<Integer> rightList = new ArrayList<>();
+        List<Integer> leftList = new ArrayList<>();
 
-        if (inputStream == null) {
-            System.out.println("Arquivo não encontrado em resources.");
+        // Carregar os dados do arquivo
+        if (!loadInputData("inputDay01.txt", rightList, leftList)) {
+            System.out.println("Arquivo não encontrado ou erro ao carregar os dados.");
             return;
         }
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
-            String line;
-            List<Integer> rightList = new ArrayList<>();
-            List<Integer> leftList = new ArrayList<>();
 
+        // Calcular soma das diferenças absolutas
+        int somaFinal = calculateAbsoluteDifferenceSum(rightList, leftList);
+        System.out.println("Soma das diferenças absolutas: " + somaFinal);
+
+        // Calcular Similarity Score
+        int similarityScore = calculateSimilarityScore(rightList, leftList);
+        System.out.println("Similarity Score: " + similarityScore);
+    }
+
+    /**
+     * Carrega os dados do arquivo de entrada em duas listas.
+     *
+     * @param fileName  Nome do arquivo de entrada.
+     * @param rightList Lista para armazenar os números da primeira coluna.
+     * @param leftList  Lista para armazenar os números da segunda coluna.
+     * @return true se os dados foram carregados com sucesso, false caso contrário.
+     */
+    private static boolean loadInputData(String fileName, List<Integer> rightList, List<Integer> leftList) {
+        try (InputStream inputStream = AdventofCode2024Application.class.getClassLoader().getResourceAsStream(fileName);
+             BufferedReader br = new BufferedReader(new InputStreamReader(Objects.requireNonNull(inputStream)))) {
+
+            String line;
             while ((line = br.readLine()) != null) {
                 String[] numbers = line.split(" {3}");
                 rightList.add(Integer.parseInt(numbers[0]));
                 leftList.add(Integer.parseInt(numbers[1]));
             }
-            Integer somaFinal = 0;
+            return true;
 
-            Collections.sort(rightList);
-            Collections.sort(leftList);
-
-            for (int i = 0; i < rightList.size(); i++) {
-                somaFinal += Math.abs((rightList.get(i) - leftList.get(i)));
-            }
-
-            System.out.println(somaFinal);
-
-            Map<Integer, Integer> rightMap = new HashMap<>();
-
-            for (int num : rightList) {
-                rightMap.put(num, rightMap.getOrDefault(num, 0) + 1);
-            }
-
-            int similarityScore = 0;
-
-            for (int num : leftList) {
-                int countRight = rightMap.getOrDefault(num, 0);
-                similarityScore += num * countRight;
-            }
-
-            System.out.println(similarityScore);
-
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (NullPointerException | IOException e) {
+            return false;
         }
     }
 
+    /**
+     * Calcula a soma das diferenças absolutas entre as listas.
+     *
+     * @param rightList Lista direita.
+     * @param leftList  Lista esquerda.
+     * @return Soma das diferenças absolutas.
+     */
+    private static int calculateAbsoluteDifferenceSum(List<Integer> rightList, List<Integer> leftList) {
+        Collections.sort(rightList);
+        Collections.sort(leftList);
+
+        int sum = 0;
+        for (int i = 0; i < rightList.size(); i++) {
+            sum += Math.abs(rightList.get(i) - leftList.get(i));
+        }
+        return sum;
+    }
+
+    /**
+     * Calcula o Similarity Score entre duas listas.
+     *
+     * @param rightList Lista direita.
+     * @param leftList  Lista esquerda.
+     * @return Similarity Score.
+     */
+    private static int calculateSimilarityScore(List<Integer> rightList, List<Integer> leftList) {
+        Map<Integer, Integer> rightFrequencyMap = new HashMap<>();
+        for (int num : rightList) {
+            rightFrequencyMap.merge(num, 1, Integer::sum);
+        }
+
+        int similarityScore = 0;
+        for (int num : leftList) {
+            similarityScore += num * rightFrequencyMap.getOrDefault(num, 0);
+        }
+        return similarityScore;
+    }
 }
