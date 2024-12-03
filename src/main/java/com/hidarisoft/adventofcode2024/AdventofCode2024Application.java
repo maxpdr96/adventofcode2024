@@ -11,44 +11,99 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class AdventofCode2024Application {
 
-    public static void main(String[] args) {
-        String day = "02";
+    public static void main(String[] args) throws IOException {
+        dayThree();
+    }
 
-        if (day.equals("01")) {
-            DayOne();
-        } else if (day.equals("02")) {
-            DayTwo();
-        } else if (day.equals("03")) {
-            DayThree();
+    private static void dayThree() throws IOException {
+        try (InputStream inputStream = AdventofCode2024Application.class.getClassLoader().getResourceAsStream("inputDay03.txt"); BufferedReader br = new BufferedReader(new InputStreamReader(Objects.requireNonNull(inputStream)))) {
+            String line;
+            List<String> list = new ArrayList<>();
+            while ((line = br.readLine()) != null) {
+                list.add(line);
+            }
+
+            int result = getResult(list);
+
+            System.out.println("Primeira resposta: " + result);
+
+            result = 0;
+            boolean isEnabled = true;
+
+            String regex = "(do\\(\\)|don't\\(\\)|mul\\(([1-9][0-9]{0,2}),([1-9][0-9]{0,2})\\))";
+
+            for (String lineEach : list) {
+                Pattern pattern = Pattern.compile(regex);
+                Matcher matcher = pattern.matcher(lineEach);
+
+                while (matcher.find()) {
+                    String match = matcher.group(0);
+
+                    if (match.equals("do()")) {
+                        isEnabled = true;
+                    } else if (match.equals("don't()")) {
+                        isEnabled = false;
+                    } else if (match.startsWith("mul(") && isEnabled) {
+                        int a = Integer.parseInt(matcher.group(2));
+                        int b = Integer.parseInt(matcher.group(3));
+                        result += a * b;
+                    }
+                }
+            }
+
+            System.out.println("Segunda resposta: " + result);
         }
+
     }
 
-    private static void DayThree() {
+    private static int getResult(Object object) {
+        String regex = "mul\\(([1-9][0-9]{0,2}),([1-9][0-9]{0,2})\\)";
+        int result = 0;
+        if (object instanceof List<?>) {
+            var list = (List<String>) object;
+
+
+            for (String lineEach : list) {
+                Pattern pattern = Pattern.compile(regex);
+                Matcher matcher = pattern.matcher(lineEach);
+
+                while (matcher.find()) {
+                    result += Integer.parseInt(matcher.group(1)) * Integer.parseInt(matcher.group(2));
+                }
+            }
+        } else if (object instanceof String lineEach) {
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(lineEach);
+            while (matcher.find()) {
+                result += Integer.parseInt(matcher.group(1)) * Integer.parseInt(matcher.group(2));
+            }
+        }
+        return result;
+
     }
 
-    private static void DayOne() {
+    private static void dayOne() {
         List<Integer> rightList = new ArrayList<>();
         List<Integer> leftList = new ArrayList<>();
 
-        // Carregar os dados do arquivo
         if (!loadInputData("inputDay01.txt", rightList, leftList)) {
             System.out.println("Arquivo não encontrado ou erro ao carregar os dados.");
             return;
         }
 
-        // Calcular soma das diferenças absolutas
         int somaFinal = calculateAbsoluteDifferenceSum(rightList, leftList);
         System.out.println("Soma das diferenças absolutas: " + somaFinal);
 
-        // Calcular Similarity Score
         int similarityScore = calculateSimilarityScore(rightList, leftList);
         System.out.println("Similarity Score: " + similarityScore);
     }
 
-    private static void DayTwo() {
+    private static void dayTwo() {
         List<List<Integer>> reports = readReports("inputDay02.txt");
         int safeCount = 0;
 
@@ -74,8 +129,7 @@ public class AdventofCode2024Application {
 
     private static List<List<Integer>> readReports(String filePath) {
         List<List<Integer>> reports = new ArrayList<>();
-        try (InputStream inputStream = AdventofCode2024Application.class.getClassLoader().getResourceAsStream(filePath);
-             BufferedReader br = new BufferedReader(new InputStreamReader(Objects.requireNonNull(inputStream)))) {
+        try (InputStream inputStream = AdventofCode2024Application.class.getClassLoader().getResourceAsStream(filePath); BufferedReader br = new BufferedReader(new InputStreamReader(Objects.requireNonNull(inputStream)))) {
             String line;
             while ((line = br.readLine()) != null) {
                 List<Integer> report = new ArrayList<>();
@@ -98,7 +152,6 @@ public class AdventofCode2024Application {
         for (int i = 1; i < report.size(); i++) {
             int diff = report.get(i) - report.get(i - 1);
 
-            // Verifica se a diferença está fora do intervalo permitido
             if (diff > 3 || diff < -3 || diff == 0) {
                 return false;
             }
@@ -112,14 +165,12 @@ public class AdventofCode2024Application {
             }
         }
 
-        return (Boolean.TRUE.equals(isIncreasing) && Boolean.FALSE.equals(isDecreasing))
-                || (Boolean.FALSE.equals(isIncreasing) && Boolean.TRUE.equals(isDecreasing));
+        return (Boolean.TRUE.equals(isIncreasing) && Boolean.FALSE.equals(isDecreasing)) || (Boolean.FALSE.equals(isIncreasing) && Boolean.TRUE.equals(isDecreasing));
     }
 
 
     private static boolean loadInputData(String fileName, List<Integer> rightList, List<Integer> leftList) {
-        try (InputStream inputStream = AdventofCode2024Application.class.getClassLoader().getResourceAsStream(fileName);
-             BufferedReader br = new BufferedReader(new InputStreamReader(Objects.requireNonNull(inputStream)))) {
+        try (InputStream inputStream = AdventofCode2024Application.class.getClassLoader().getResourceAsStream(fileName); BufferedReader br = new BufferedReader(new InputStreamReader(Objects.requireNonNull(inputStream)))) {
 
             String line;
             while ((line = br.readLine()) != null) {
