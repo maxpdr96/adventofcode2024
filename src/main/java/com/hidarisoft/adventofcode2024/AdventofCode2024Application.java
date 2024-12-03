@@ -19,9 +19,9 @@ public class AdventofCode2024Application {
 
         if (day.equals("01")) {
             DayOne();
-        } else if (day.equals("02")){
+        } else if (day.equals("02")) {
             DayTwo();
-        } else if (day.equals("03")){
+        } else if (day.equals("03")) {
             DayThree();
         }
     }
@@ -53,12 +53,10 @@ public class AdventofCode2024Application {
         int safeCount = 0;
 
         for (List<Integer> report : reports) {
-            if (isSafe(report)  || canBeSafeWithOneRemoval(report)) {
+            if (isSafe(report) || canBeSafeWithOneRemoval(report)) {
                 safeCount++;
             }
         }
-
-
 
         System.out.println("Número de relatórios seguros: " + safeCount);
     }
