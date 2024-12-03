@@ -5,11 +5,31 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class AdventofCode2024Application {
 
     public static void main(String[] args) {
+        String day = "02";
+
+        if (day.equals("01")) {
+            DayOne();
+        } else if (day.equals("02")){
+            DayTwo();
+        } else if (day.equals("03")){
+            DayThree();
+        }
+    }
+
+    private static void DayThree() {
+    }
+
+    private static void DayOne() {
         List<Integer> rightList = new ArrayList<>();
         List<Integer> leftList = new ArrayList<>();
 
@@ -28,14 +48,77 @@ public class AdventofCode2024Application {
         System.out.println("Similarity Score: " + similarityScore);
     }
 
-    /**
-     * Carrega os dados do arquivo de entrada em duas listas.
-     *
-     * @param fileName  Nome do arquivo de entrada.
-     * @param rightList Lista para armazenar os números da primeira coluna.
-     * @param leftList  Lista para armazenar os números da segunda coluna.
-     * @return true se os dados foram carregados com sucesso, false caso contrário.
-     */
+    private static void DayTwo() {
+        List<List<Integer>> reports = readReports("inputDay02.txt");
+        int safeCount = 0;
+
+        for (List<Integer> report : reports) {
+            if (isSafe(report)  || canBeSafeWithOneRemoval(report)) {
+                safeCount++;
+            }
+        }
+
+
+
+        System.out.println("Número de relatórios seguros: " + safeCount);
+    }
+
+    private static boolean canBeSafeWithOneRemoval(List<Integer> report) {
+        for (int i = 0; i < report.size(); i++) {
+            List<Integer> modifiedReport = new ArrayList<>(report);
+            modifiedReport.remove(i);
+            if (isSafe(modifiedReport)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static List<List<Integer>> readReports(String filePath) {
+        List<List<Integer>> reports = new ArrayList<>();
+        try (InputStream inputStream = AdventofCode2024Application.class.getClassLoader().getResourceAsStream(filePath);
+             BufferedReader br = new BufferedReader(new InputStreamReader(Objects.requireNonNull(inputStream)))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                List<Integer> report = new ArrayList<>();
+                String[] levels = line.trim().split("\\s+");
+                for (String level : levels) {
+                    report.add(Integer.parseInt(level));
+                }
+                reports.add(report);
+            }
+        } catch (IOException e) {
+            System.err.println("Erro ao ler o arquivo: " + e.getMessage());
+        }
+        return reports;
+    }
+
+    private static boolean isSafe(List<Integer> report) {
+        boolean isIncreasing = true;
+        boolean isDecreasing = true;
+
+        for (int i = 1; i < report.size(); i++) {
+            int diff = report.get(i) - report.get(i - 1);
+
+            // Verifica se a diferença está fora do intervalo permitido
+            if (diff > 3 || diff < -3 || diff == 0) {
+                return false;
+            }
+
+            if (diff > 0) {
+                isIncreasing = false;
+            }
+
+            if (diff < 0) {
+                isDecreasing = false;
+            }
+        }
+
+        return (Boolean.TRUE.equals(isIncreasing) && Boolean.FALSE.equals(isDecreasing))
+                || (Boolean.FALSE.equals(isIncreasing) && Boolean.TRUE.equals(isDecreasing));
+    }
+
+
     private static boolean loadInputData(String fileName, List<Integer> rightList, List<Integer> leftList) {
         try (InputStream inputStream = AdventofCode2024Application.class.getClassLoader().getResourceAsStream(fileName);
              BufferedReader br = new BufferedReader(new InputStreamReader(Objects.requireNonNull(inputStream)))) {
@@ -53,13 +136,7 @@ public class AdventofCode2024Application {
         }
     }
 
-    /**
-     * Calcula a soma das diferenças absolutas entre as listas.
-     *
-     * @param rightList Lista direita.
-     * @param leftList  Lista esquerda.
-     * @return Soma das diferenças absolutas.
-     */
+
     private static int calculateAbsoluteDifferenceSum(List<Integer> rightList, List<Integer> leftList) {
         Collections.sort(rightList);
         Collections.sort(leftList);
@@ -71,13 +148,7 @@ public class AdventofCode2024Application {
         return sum;
     }
 
-    /**
-     * Calcula o Similarity Score entre duas listas.
-     *
-     * @param rightList Lista direita.
-     * @param leftList  Lista esquerda.
-     * @return Similarity Score.
-     */
+
     private static int calculateSimilarityScore(List<Integer> rightList, List<Integer> leftList) {
         Map<Integer, Integer> rightFrequencyMap = new HashMap<>();
         for (int num : rightList) {
